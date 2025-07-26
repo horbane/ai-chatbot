@@ -41,7 +41,7 @@ def chat(msg: ChatMessage):
         ],
         "temperature": 0.6,
         "top_p": 0.95,
-        "max_tokens": 4096,
+        "max_tokens": 512,
         "stream": False
     }
 
