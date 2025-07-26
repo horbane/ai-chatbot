@@ -163,9 +163,10 @@
     const reply = data.reply || "⚠️ Something went wrong";
 
     if (!reply.toLowerCase().includes("thinking")) {
-      chat.innerHTML += `<div class="message bot"><div class="text">${reply}</div><div class="time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div></div>`;
-      chat.scrollTop = chat.scrollHeight;
-    }
+  chat.innerHTML += `<div class="message bot"><div class="text">${reply}</div></div>`;
+  chat.scrollTop = chat.scrollHeight;
+}
+
   }
 
   // Enable Enter to send
