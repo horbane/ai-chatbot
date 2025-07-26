@@ -2,7 +2,7 @@ export default async function handler(req, res) {
   const apiKey = process.env.NVIDIA_API_KEY;
   const userMessage = req.body.message;
 
-  const response = await fetch("https://integrate.api.nvidia.com/v1/llama3-8b-instruct", {
+  const response = await fetch("https://integrate.api.nvidia.com/v1", {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${apiKey}`,
