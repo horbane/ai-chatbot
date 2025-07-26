@@ -1,70 +1,68 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-import os
+from pydantic import BaseModel
 import requests
+import os
+import json
 
 app = FastAPI()
 
-# Allow all origins for now (you can restrict to your Vercel domain later)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=["*"],
+    allow_methods=["POST", "GET"],
     allow_headers=["*"],
 )
 
-# Welcome route at /
+NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
+
+class ChatMessage(BaseModel):
+    message: str
+
 @app.get("/")
-def read_root():
-    return {
-        "message": "✅ Backend is live! Use POST /chat to talk to the AI."
-    }
+def root():
+    return {"message": "✅ Backend is live! Use POST /chat to talk to the AI."}
 
-# Info route at /chat (for testing GET)
-@app.get("/chat")
-def chat_info():
-    return {
-        "message": "This endpoint expects a POST request with a JSON message."
-    }
-
-# Actual chat endpoint (POST only)
 @app.post("/chat")
-async def chat(request: Request):
-    data = await request.json()
-    user_message = data.get("message", "")
+def chat(msg: ChatMessage):
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {NVIDIA_API_KEY}"
+    }
 
-    if not user_message:
-        return {"reply": "⚠️ No message provided."}
-
-    # Send request to NVIDIA API
-    try:
-        NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
-
-        nvidia_response = requests.post(
-            "https://integrate.api.nvidia.com/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {NVIDIA_API_KEY}",
-                "Content-Type": "application/json"
+    payload = {
+        "model": "nvidia/llama-3.1-nemotron-ultra-253b-v1",
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are a helpful assistant. Think internally if needed, but only give the final answer to the user."
             },
-            json={
-                "model": "nvidia/llama-3.1-nemotron-ultra-253b-v1",
-                "messages": [
-                    {"role": "system", "content": "detailed thinking on"},
-                    {"role": "user", "content": user_message}
-                ],
-                "max_tokens": 1024,
-                "temperature": 0.7
-            }
+            {"role": "user", "content": msg.message}
+        ],
+        "temperature": 0.6,
+        "top_p": 0.95,
+        "max_tokens": 4096,
+        "stream": False
+    }
+
+    try:
+        response = requests.post(
+            "https://integrate.api.nvidia.com/v1/chat/completions",
+            headers=headers,
+            data=json.dumps(payload)
         )
 
-        response_json = nvidia_response.json()
+        data = response.json()
+        full_reply = data["choices"][0]["message"]["content"].strip()
 
-        if "choices" in response_json and response_json["choices"]:
-            reply = response_json["choices"][0]["message"]["content"]
-            return {"reply": reply}
+        # Split into paragraphs
+        paragraphs = [p.strip() for p in full_reply.split("\n\n") if p.strip()]
 
-        return {"reply": "⚠️ Unexpected response from NVIDIA."}
+        # Get only the last paragraph (likely final answer)
+        clean_reply = paragraphs[-1] if paragraphs else full_reply
+
+        return {"reply": clean_reply}
 
     except Exception as e:
+        print("🔥 Backend error:", e)
         return {"reply": f"🔥 Backend error: {str(e)}"}
