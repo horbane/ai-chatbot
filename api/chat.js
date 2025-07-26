@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     const response = await fetch("https://ai-horba.onrender.com/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: userMessage }),
+      body: JSON.stringify({ message: userMessage })
     });
 
     const data = await response.json();
@@ -19,6 +19,7 @@ export default async function handler(req, res) {
     }
 
     res.status(200).json({ reply: data.reply });
+
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ reply: "⚠️ Server error occurred." });
