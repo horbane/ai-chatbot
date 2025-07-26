@@ -44,6 +44,7 @@
       width: 30px;
       height: 30px;
       stroke: white;
+      stroke-width: 3;
     }
 
     header h1 {
@@ -72,7 +73,7 @@
 
     .user {
       align-self: flex-end;
-      background-color: #2E236C;
+      background-color: #443d8b;
       color: white;
     }
 
@@ -82,11 +83,8 @@
       color: #2E236C;
     }
 
-    .timestamp {
-      font-size: 10px;
-      position: absolute;
-      bottom: 5px;
-      right: 10px;
+    .time {
+      font-size: 8px;
       opacity: 0.6;
     }
 
@@ -111,9 +109,6 @@
       background: none;
       border: none;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
     #sendBtn svg {
@@ -134,65 +129,52 @@
 <body>
   <div id="container">
     <header>
-      <!-- Bot Icon -->
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-        <path d="M12 8V4H8"/>
-        <rect width="16" height="12" x="4" y="8" rx="2"/>
-        <path d="M2 14h2"/>
-        <path d="M20 14h2"/>
-        <path d="M15 13v2"/>
-        <path d="M9 13v2"/>
-      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bot-icon" viewBox="0 0 24 24"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
       <h1>AI Chat</h1>
     </header>
     <div id="chat"></div>
     <footer>
-      <input id="userInput" placeholder="Type your message..." />
-      <button id="sendBtn">
-        <!-- Send Icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-          <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/>
-          <path d="m21.854 2.147-10.94 10.939"/>
-        </svg>
+      <input id="userInput" placeholder="Type a message..." />
+      <button id="sendBtn" onclick="sendMessage()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send-icon" viewBox="0 0 24 24"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>
       </button>
     </footer>
     <div class="credit">By Horbane and ChatGPT</div>
   </div>
 
-  <script>
-    const input = document.getElementById('userInput');
-    const chat = document.getElementById('chat');
-    const sendBtn = document.getElementById('sendBtn');
+<script>
+  const input = document.getElementById('userInput');
+  const chat = document.getElementById('chat');
 
-    async function sendMessage() {
-      const userMessage = input.value.trim();
-      if (!userMessage) return;
-      input.value = '';
-      chat.innerHTML += `<div class="message user"><div class="text">${userMessage}</div><div class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div></div>`;
-      chat.scrollTop = chat.scrollHeight;
+  async function sendMessage() {
+    const userMessage = input.value.trim();
+    if (!userMessage) return;
+    input.value = '';
+    chat.innerHTML += `<div class="message user"><div class="text">${userMessage}</div><div class="time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div></div>`;
+    chat.scrollTop = chat.scrollHeight;
 
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage })
-      });
-
-      const data = await res.json();
-      const reply = data.reply || "⚠️ Something went wrong";
-      if (!reply.toLowerCase().includes("thinking")) {
-        chat.innerHTML += `<div class="message bot"><div class="text">${reply}</div><div class="timestamp">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div></div>`;
-        chat.scrollTop = chat.scrollHeight;
-      }
-    }
-
-    sendBtn.addEventListener('click', sendMessage);
-
-    input.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        sendMessage();
-      }
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: userMessage })
     });
-  </script>
+
+    const data = await res.json();
+    const reply = data.reply || "⚠️ Something went wrong";
+
+    if (!reply.toLowerCase().includes("thinking")) {
+      chat.innerHTML += `<div class="message bot"><div class="text">${reply}</div><div class="time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div></div>`;
+      chat.scrollTop = chat.scrollHeight;
+    }
+  }
+
+  // Enable Enter to send
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+</script>
 </body>
 </html>
