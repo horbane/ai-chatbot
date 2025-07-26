@@ -21,15 +21,17 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-    const reply = data?.choices?.[0]?.message?.content;
+    const reply = data?.choices?.[0]?.message?.content?.trim();
 
     if (!reply) {
-      return res.status(500).json({ error: "No reply from NVIDIA API.", full: data });
+      console.error("No reply in response:", data); // Debug output
+      return res.status(500).json({ reply: "⚠️ No reply from model. Try again." });
     }
 
     res.status(200).json({ reply });
 
   } catch (err) {
-    res.status(500).json({ error: "Server error", details: err.message });
+    console.error("Server error:", err.message); // Debug output
+    res.status(500).json({ reply: "⚠️ Server error occurred." });
   }
 }
