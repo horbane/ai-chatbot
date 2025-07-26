@@ -6,9 +6,11 @@ export default async function handler(req, res) {
   const userMessage = req.body.message;
 
   try {
-    const response = await fetch("https://ai-horba.onrender.com/chat", {
+    const response = await fetch("https://your-backend.onrender.com/chat", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({ message: userMessage })
     });
 
