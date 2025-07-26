@@ -1,41 +1,26 @@
 export default async function handler(req, res) {
-  try {
-    const apiKey = process.env.NVIDIA_API_KEY;
-    const userMessage = req.body.message;
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
 
-    const response = await fetch("https://integrate.api.nvidia.com/v1", {
+  const userMessage = req.body.message;
+
+  try {
+    const response = await fetch("https://ai-horba.onrender.com/chat", {
       method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "nvidia/llama-3.1-nemotron-ultra-253b-v1", // ✅ Your model
-        messages: [{ role: "user", content: userMessage }],
-        temperature: 0.6,
-        top_p: 0.95,
-        max_tokens: 4096,
-        stream: true
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: userMessage }),
     });
 
-    const text = await response.text();
+    const data = await response.json();
 
-    try {
-      const data = JSON.parse(text);
-      const reply = data?.choices?.[0]?.message?.content?.trim();
-      if (!reply) {
-        console.error("⚠️ Model returned no message:", JSON.stringify(data));
-        return res.status(500).json({ reply: "⚠️ Model returned no message." });
-      }
-      return res.status(200).json({ reply });
-    } catch (err) {
-      console.error("❌ Response not valid JSON:", text);
-      return res.status(500).json({ reply: "⚠️ Invalid response from NVIDIA.", raw: text });
+    if (!data.reply) {
+      return res.status(500).json({ reply: "⚠️ Unexpected response from backend." });
     }
 
-  } catch (err) {
-    console.error("🔥 Backend error:", err.message);
-    return res.status(500).json({ reply: "⚠️ Server error occurred." });
+    res.status(200).json({ reply: data.reply });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ reply: "⚠️ Server error occurred." });
   }
 }
