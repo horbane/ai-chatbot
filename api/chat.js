@@ -3,10 +3,6 @@ export default async function handler(req, res) {
     const apiKey = process.env.NVIDIA_API_KEY;
     const userMessage = req.body.message;
 
-    if (!apiKey) {
-      return res.status(500).json({ reply: "API key missing" });
-    }
-
     const response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -14,18 +10,17 @@ export default async function handler(req, res) {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "nvidia/llama-3-8b-instruct",
+        model: "nvidia/llama-3.1-nemotron-ultra-253b-v1", // ✅ Your model
         messages: [{ role: "user", content: userMessage }],
         temperature: 0.7,
         top_p: 0.95,
-        max_tokens: 256,
+        max_tokens: 512,
         stream: false
       })
     });
 
     const text = await response.text();
 
-    // Try to parse JSON safely
     try {
       const data = JSON.parse(text);
       const reply = data?.choices?.[0]?.message?.content?.trim();
@@ -34,7 +29,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ reply: "⚠️ Model returned no message." });
       }
       return res.status(200).json({ reply });
-    } catch (parseError) {
+    } catch (err) {
       console.error("❌ Response not valid JSON:", text);
       return res.status(500).json({ reply: "⚠️ Invalid response from NVIDIA.", raw: text });
     }
