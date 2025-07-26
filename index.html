@@ -2,183 +2,188 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AI Chat</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&display=swap');
-
     body {
-      margin: 0;
-      padding: 0;
       background-color: #24142D;
       font-family: 'DM Sans', sans-serif;
-      color: white;
       display: flex;
       justify-content: center;
-      align-items: center;
-      height: 100vh;
+      padding: 30px;
+      color: white;
     }
 
-    #container {
-      width: 100%;
-      max-width: 480px;
-      background-color: #2E236C;
+    .chat-container {
+      background-color: #433D8B;
+      border: 1px solid white;
       border-radius: 30px;
-      overflow: hidden;
+      max-width: 430px;
+      width: 100%;
       display: flex;
       flex-direction: column;
       height: 90vh;
-      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      overflow: hidden;
     }
 
-    header {
-      background-color: #433D8B;
-      padding: 20px;
+    .header, .footer {
+      background-color: #2E236C;
+      padding: 10px 20px;
+    }
+
+    .header {
+      font-weight: bold;
+      font-size: 20px;
+    }
+
+    .footer {
       display: flex;
       align-items: center;
       gap: 10px;
-      border-bottom: 1px solid #ccc;
     }
 
-    header img {
-      width: 30px;
-      height: 30px;
-      filter: brightness(0) invert(1);
-    }
-
-    header h1 {
-      font-size: 20px;
-      margin: 0;
-    }
-
-    #chat {
-      flex-grow: 1;
+    .messages {
+      flex: 1;
       padding: 20px;
       overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
     }
 
     .message {
+      margin-bottom: 15px;
       max-width: 80%;
-      padding: 12px;
-      border-radius: 12px;
+      padding: 10px 15px;
+      border-radius: 15px;
       position: relative;
-      font-size: 14px;
-      line-height: 1.4;
-      word-wrap: break-word;
     }
 
-    .user {
-      align-self: flex-end;
+    .message.user {
       background-color: #2E236C;
+      align-self: flex-end;
       color: white;
+      border-bottom-right-radius: 0;
     }
 
-    .bot {
-      align-self: flex-start;
+    .message.bot {
       background-color: white;
+      align-self: flex-start;
       color: #2E236C;
+      border-bottom-left-radius: 0;
     }
 
     .timestamp {
       font-size: 10px;
-      position: absolute;
-      bottom: 5px;
-      right: 10px;
       opacity: 0.6;
+      margin-top: 5px;
     }
 
-    footer {
-      background-color: #2E236C;
-      padding: 10px 15px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    #userInput {
-      flex-grow: 1;
+    input {
+      flex: 1;
       padding: 12px;
       border-radius: 999px;
       border: none;
       outline: none;
-      font-size: 14px;
     }
 
-    #sendBtn {
+    button {
       background: none;
       border: none;
       cursor: pointer;
     }
 
-    #sendBtn img {
-      width: 24px;
-      height: 24px;
-      filter: brightness(0) invert(1);
+    svg {
+      stroke: white;
+      stroke-width: 3.5;
     }
 
     .credit {
-      font-size: 10px;
-      opacity: 0.5;
+      font-size: 12px;
+      opacity: 0.7;
       text-align: left;
       margin: 10px 20px;
     }
   </style>
 </head>
 <body>
-  <div id="container">
-    <header>
-      <img src="bot.svg" alt="Bot Icon" />
-      <h1>AI Chat</h1>
-    </header>
-    <div id="chat"></div>
-    <footer>
-      <input id="userInput" placeholder="Type your message..." />
-      <button id="sendButton">
-        <img src="/icons/send.svg" alt="Send" />
+  <div class="chat-container">
+    <div class="header">
+      <span>
+        <!-- Bot Icon -->
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/>
+          <path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>
+        </svg>
+        &nbsp; AI Chat
+      </span>
+    </div>
+
+    <div class="messages" id="chat"></div>
+
+    <div class="footer">
+      <input id="userInput" placeholder="Type your message..." onkeydown="handleEnter(event)" />
+      <button onclick="sendMessage()" id="sendButton">
+        <!-- Send Icon -->
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/>
+          <path d="m21.854 2.147-10.94 10.939"/>
+        </svg>
       </button>
-    </footer>
+    </div>
+
     <div class="credit">By Horbane and ChatGPT</div>
   </div>
 
-<script>
-  const input = document.getElementById('userInput');
-  const chat = document.getElementById('chat');
+  <script>
+    function getTimeNow() {
+      const date = new Date();
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
 
-  async function sendMessage() {
-    const userMessage = input.value.trim();
-    if (!userMessage) return;
-    input.value = '';
-    chat.innerHTML += `<div class="message user"><div class="text">${userMessage}</div><div class="time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div></div>`;
-    chat.scrollTop = chat.scrollHeight;
+    function handleEnter(e) {
+      if (e.key === "Enter") {
+        sendMessage();
+      }
+    }
 
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: userMessage })
-    });
-    
-    const data = await res.json();
-    const reply = data.reply || "⚠️ Something went wrong";
-    if (!reply.toLowerCase().includes("thinking")) {
-      chat.innerHTML += `<div class="message bot"><div class="text">${reply}</div><div class="time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div></div>`;
+    async function sendMessage() {
+      const input = document.getElementById("userInput");
+      const chat = document.getElementById("chat");
+      const text = input.value.trim();
+      if (!text) return;
+
+      input.value = "";
+
+      // Add user message
+      const userMsg = document.createElement("div");
+      userMsg.className = "message user";
+      userMsg.innerHTML = `${text}<div class="timestamp">${getTimeNow()}</div>`;
+      chat.appendChild(userMsg);
       chat.scrollTop = chat.scrollHeight;
+
+      // Call backend
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text })
+        });
+
+        const data = await res.json();
+        const cleanReply = (data.reply || "").replace(/^(Analyzing|Thinking|Planning).*/i, "").trim();
+
+        const botMsg = document.createElement("div");
+        botMsg.className = "message bot";
+        botMsg.innerHTML = `${cleanReply}<div class="timestamp">${getTimeNow()}</div>`;
+        chat.appendChild(botMsg);
+        chat.scrollTop = chat.scrollHeight;
+
+      } catch (err) {
+        const errMsg = document.createElement("div");
+        errMsg.className = "message bot";
+        errMsg.innerHTML = `⚠️ Error talking to AI<div class="timestamp">${getTimeNow()}</div>`;
+        chat.appendChild(errMsg);
+        chat.scrollTop = chat.scrollHeight;
+      }
     }
-  }
-
-  // Trigger on button click
-  document.getElementById('sendButton').addEventListener('click', sendMessage);
-
-  // Trigger on Enter key
-  input.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      sendMessage();
-    }
-  });
-</script>
-
+  </script>
 </body>
 </html>
