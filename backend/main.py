@@ -35,7 +35,7 @@ def chat(msg: ChatMessage):
         "messages": [
             {
                 "role": "system",
-                "content": "You are a helpful assistant. Think internally if needed, but only give the final answer to the user."
+                "content": "You are a helpful assistant. Please give your final answer directly and do not show your reasoning or thought process."
             },
             {"role": "user", "content": msg.message}
         ],
@@ -53,15 +53,9 @@ def chat(msg: ChatMessage):
         )
 
         data = response.json()
-        full_reply = data["choices"][0]["message"]["content"].strip()
+        reply = data["choices"][0]["message"]["content"].strip()
 
-        # Split into paragraphs
-        paragraphs = [p.strip() for p in full_reply.split("\n\n") if p.strip()]
-
-        # Get only the last paragraph (likely final answer)
-        clean_reply = paragraphs[-1] if paragraphs else full_reply
-
-        return {"reply": clean_reply}
+        return {"reply": reply}
 
     except Exception as e:
         print("🔥 Backend error:", e)
