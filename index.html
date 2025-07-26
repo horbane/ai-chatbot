@@ -1,20 +1,52 @@
-<script>
-  async function sendMessage() {
-    const input = document.getElementById('userInput');
-    const chat = document.getElementById('chat');
-    const userMessage = input.value;
-    input.value = '';
-    chat.innerHTML += `<p><strong>You:</strong> ${userMessage}</p>`;
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple AI Chat</title>
+  <style>
+    body { font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; }
+    #chat { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: auto; }
+    input, button { width: 100%; padding: 10px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>Ask Me Anything</h2>
+  <div id="chat"></div>
+  <input id="userInput" placeholder="Type a message..." />
+  <button onclick="sendMessage()">Send</button>
 
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: userMessage })
-    });
+  <script>
+    async function sendMessage() {
+      const input = document.getElementById('userInput');
+      const chat = document.getElementById('chat');
+      const userMessage = input.value;
+      input.value = '';
 
-    const data = await res.json();
+      if (!userMessage.trim()) return; // avoid empty messages
 
-    const cleanReply = data.reply.replace(/<think>.*?<\/think>/gs, "").trim();
-    chat.innerHTML += `<p><strong>Bot:</strong> ${cleanReply}</p>`;
-  }
-</script>
+      chat.innerHTML += `<p><strong>You:</strong> ${userMessage}</p>`;
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: userMessage })
+        });
+
+        const data = await res.json();
+
+        // Failsafe: if no reply or error, handle it
+        if (!data.reply) {
+          chat.innerHTML += `<p><strong>Bot:</strong> ⚠️ No response received.</p>`;
+          return;
+        }
+
+        // Strip <think>...</think> tags if they exist
+        const cleanReply = data.reply.replace(/<think>.*?<\/think>/gs, "").trim();
+        chat.innerHTML += `<p><strong>Bot:</strong> ${cleanReply}</p>`;
+      } catch (err) {
+        chat.innerHTML += `<p><strong>Bot:</strong> ⚠️ Error: ${err.message}</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
