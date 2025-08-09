@@ -34,7 +34,7 @@ def chat(msg: ChatMessage):
     }
 
     payload = {
-        "model": "nvidia/llama-3.1-8b-instruct-v1.0",  # Using the correct model format
+        "model": "nvidia/llama-3.1-nemotron-ultra-253b-v1",
         "messages": [
             {
                 "role": "system",
@@ -44,7 +44,7 @@ def chat(msg: ChatMessage):
         ],
         "temperature": 0.6,
         "top_p": 0.95,
-        "max_tokens": 2048,  # Reduced token limit
+        "max_tokens": 4096,
         "stream": False
     }
 
@@ -52,7 +52,7 @@ def chat(msg: ChatMessage):
         print(f"🔄 Sending request to NVIDIA API with message: {msg.message}")
         
         response = requests.post(
-            "https://api.nvcf.nvidia.com/v1/chat/completions",
+            "https://integrate.api.nvidia.com/v1/chat/completions",
             headers=headers,
             data=json.dumps(payload),
             timeout=30
