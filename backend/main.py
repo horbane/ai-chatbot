@@ -58,7 +58,7 @@ def chat(msg: ChatMessage):
             timeout=30
         )
 
-        print(f"📡 NVIDIA API Response Status: {response.status}")
+        print(f"📡 NVIDIA API Response Status: {response.status_code}")
         
         # Check if the request was successful
         if response.status_code != 200:
