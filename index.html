@@ -240,6 +240,22 @@
         padding: 0;
       }
     }
+
+    /* Prevent duplication - ensure only one container */
+    body > div:not(.chat-container) {
+      display: none !important;
+    }
+    
+    /* Ensure only one chat container exists */
+    .chat-container {
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* Hide any duplicate containers */
+    .chat-container + .chat-container {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -380,6 +396,17 @@
   // Focus input on load
   window.addEventListener('load', () => {
     input.focus();
+  });
+
+  // Prevent duplication - remove any duplicate containers
+  document.addEventListener('DOMContentLoaded', () => {
+    const containers = document.querySelectorAll('.chat-container');
+    if (containers.length > 1) {
+      // Keep only the first container, remove the rest
+      for (let i = 1; i < containers.length; i++) {
+        containers[i].remove();
+      }
+    }
   });
 </script>
 </body>
