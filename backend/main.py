@@ -34,7 +34,7 @@ def chat(msg: ChatMessage):
     }
 
     payload = {
-        "model": "nvidia/llama-3.1-8b-instruct-q4_0",  # Using a more common model
+        "model": "nvidia/llama-3.1-8b-instruct-v1.0",  # Using the correct model format
         "messages": [
             {
                 "role": "system",
@@ -52,7 +52,7 @@ def chat(msg: ChatMessage):
         print(f"🔄 Sending request to NVIDIA API with message: {msg.message}")
         
         response = requests.post(
-            "https://integrate.api.nvidia.com/v1/chat/completions",
+            "https://api.nvcf.nvidia.com/v1/chat/completions",
             headers=headers,
             data=json.dumps(payload),
             timeout=30
